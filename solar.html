@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar Simples</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: rgb(2, 0, 14);
+        }
+
+        canvas {
+            display: block;
+        }
+        #info-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-height: 90vh;
+        max-width: 90vw;
+        box-sizing: border-box;
+        overflow: auto;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #FFF;
+        border-radius: 5px;
+        transition: opacity 0.3s ease;
+        text-align: justify;
+    }
+
+
+    .responsive-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .responsive-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .responsive-table th, .responsive-table td {
+        padding: 10px;
+        border: 1px solid #FFF;
+        text-align: center;
+    }
+
+    .responsive-table th {
+        background-color: #333;
+    }
+    @media screen and (max-width: 600px) {
+        .responsive-table table {
+            width: 100%;
+        }
+
+        .responsive-table th, .responsive-table td {
+            white-space: nowrap;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <canvas id="solar-system"></canvas>
+    <button id="info-button" style="position: fixed; top: 60px; right: 20px;z-index: 1000;">Info</button>
+    <button id="toggle-animation" style="position: fixed; top: 20px; right: 20px;">Pause</button>
+
+    <div id="info-modal"
+        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: rgba(0, 0, 0, 0.8); color: #FFF; border-radius: 5px; transition: opacity 0.3s ease; text-align: justify;">
+
+        <p>No modelo de sistema solar apresentado, as proporções de tamanho e distância foram adaptadas para que
+            pudessem ser visualmente compreendidas e apresentadas em um espaço de tela limitado.</p>
+
+        <p>Os tamanhos dos planetas e do Sol foram dimensionados com base no diâmetro de Mercúrio, o menor planeta do
+            sistema solar. Cada diâmetro foi dividido pelo diâmetro de Mercúrio para obter uma proporção relativa ao
+            menor planeta. Por exemplo, a Terra é aproximadamente 2,6 vezes o tamanho de Mercúrio, e Júpiter, o maior
+            planeta do sistema solar, é aproximadamente 28,6 vezes o tamanho de Mercúrio.</p>
+
+        <p>O Sol, sendo a maior entidade do nosso sistema solar, com um diâmetro aproximadamente 142 vezes o tamanho de
+            Mercúrio, foi reduzido pela metade para caber na tela. Mesmo assim, o Sol aparece muito grande em relação
+            aos planetas, destacando a enorme diferença de tamanho na realidade.</p>
+
+        <p>As distâncias dos planetas ao Sol também foram simplificadas. Na realidade, as distâncias são tão vastas que,
+            se fossem representadas em escala, a maioria dos planetas estaria fora da tela. A distância entre cada
+            planeta e o Sol no modelo é uma fração da distância real, mas a ordem dos planetas e a ideia de que as
+            distâncias aumentam à medida que nos afastamos do Sol são preservadas.</p>
+
+        <p>A velocidade da revolução dos planetas, ou seja, o tempo que leva para cada planeta completar uma órbita em
+            torno do Sol, também foi adaptada. No modelo, a velocidade de Mercúrio é a referência, e as velocidades dos
+            outros planetas são uma fração da velocidade de Mercúrio, mantendo a proporção correta entre as velocidades
+            orbitais reais. Para calcular essas proporções, o período orbital de Mercúrio foi dividido pelo período
+            orbital de cada um dos outros planetas. Isso significa, por exemplo, que a Terra se move cerca de 2,4 vezes
+            mais devagar do que Mercúrio, enquanto Netuno se move cerca de 148 vezes mais devagar.</p>
+
+        <p>Lembre-se de que essas são simplificações e não representam as proporções exatas que existem no sistema solar
+            real. No entanto, eles fornecem uma forma visualmente acessível e educacional de entender a estrutura básica
+            do nosso sistema solar.</p>
+        <div class="responsive-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Planeta</th>
+                        <th>Tempo de Revolução na Realidade (Dias)</th>
+                        <th>Tempo de Revolução no Modelo (segundos)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mercúrio</td>
+                        <td>88</td>
+                        <td>1.47</td>
+                    </tr>
+                    <tr>
+                        <td>Vênus</td>
+                        <td>224,7</td>
+                        <td>3.75</td>
+                    </tr>
+                    <tr>
+                        <td>Terra</td>
+                        <td>365,2</td>
+                        <td>6.10</td>
+                    </tr>
+                    <tr>
+                        <td>Marte</td>
+                        <td>687</td>
+                        <td>11.48</td>
+                    </tr>
+                    <tr>
+                        <td>Júpiter</td>
+                        <td>49.22</td>
+                        <td>72.35</td>
+                    </tr>
+                    <tr>
+                        <td>Saturno</td>
+                        <td>10.747</td>
+                        <td>179.52</td>
+                    </tr>
+                    <tr>
+                        <td>Urano</td>
+                        <td>30.589</td>
+                        <td>510.57</td>
+                    </tr>
+                    <tr>
+                        <td>Netuno</td>
+                        <td>59.800</td>
+                        <td>998.54</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('solar-system');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let isDragging = false;
+        let startDragOffset = { x: 0, y: 0 };
+        let currentDragOffset = { x: 0, y: 0 };
+        let isPaused = false;
+        const toggleButton = document.getElementById('toggle-animation');
+
+        toggleButton.addEventListener('click', function () {
+            isPaused = !isPaused;
+            this.textContent = isPaused ? 'Start' : 'Pause';
+        });
+
+        canvas.addEventListener('mousedown', function (e) {
+    startDragOffset.x = e.clientX - currentDragOffset.x;
+    startDragOffset.y = e.clientY - currentDragOffset.y;
+    isDragging = true;
+    canvas.style.cursor = 'grab'; // Change cursor to 'grab' on mouse down
+});
+
+canvas.addEventListener('touchstart', function (e) {
+    e.preventDefault(); // Prevent the browser from doing its default thing (scroll, zoom)
+    startDragOffset.x = e.touches[0].clientX - currentDragOffset.x;
+    startDragOffset.y = e.touches[0].clientY - currentDragOffset.y;
+    isDragging = true;
+});
+
+canvas.addEventListener('mouseup', function () {
+    isDragging = false;
+    startDragOffset = { x: 0, y: 0 };
+    canvas.style.cursor = 'auto'; // Change cursor back to 'auto' on mouse up
+});
+
+canvas.addEventListener('touchend', function () {
+    isDragging = false;
+    startDragOffset = { x: 0, y: 0 };
+});
+
+canvas.addEventListener('mousemove', function (e) {
+    if (isDragging) {
+        currentDragOffset.x = e.clientX - startDragOffset.x;
+        currentDragOffset.y = e.clientY - startDragOffset.y;
+        draw();
+    }
+});
+
+canvas.addEventListener('touchmove', function (e) {
+    if (isDragging) {
+        e.preventDefault(); // Prevent the browser from doing its default thing (scroll, zoom)
+        currentDragOffset.x = e.touches[0].clientX - startDragOffset.x;
+        currentDragOffset.y = e.touches[0].clientY - startDragOffset.y;
+        draw();
+    }
+});
+
+
+        class CelestialBody {
+            constructor(x, y, radius, colors, orbitRadius, orbitSpeed, name) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.colors = colors;
+                this.orbitRadius = orbitRadius;
+                this.orbitSpeed = orbitSpeed;
+                this.angle = Math.random() * Math.PI * 2;
+                this.orbitPositions = [];
+                this.maxTrailLength = 5;
+                this.name = name;
+            }
+            drawRing() {
+                if (this.ring) {
+                    ctx.lineWidth = this.ring.outerRadius - this.ring.innerRadius;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, (this.ring.innerRadius + this.ring.outerRadius) / 2, 0, Math.PI * 2);
+                    ctx.strokeStyle = this.ring.color;
+                    ctx.stroke();
+                }
+            }
+
+            update() {
+                this.angle += this.orbitSpeed;
+
+                const prevX = this.x;
+                const prevY = this.y;
+
+                this.x = canvas.width / 2 + Math.cos(this.angle) * this.orbitRadius;
+                this.y = canvas.height / 2 + Math.sin(this.angle) * this.orbitRadius;
+
+                if (this.orbitPositions.length > this.maxTrailLength) {
+                    this.orbitPositions.shift();
+                }
+
+                this.orbitPositions.push({ x: prevX, y: prevY });
+            }
+
+            draw() {
+                // Desenhar rastro
+                ctx.beginPath();
+                for (let i = 0; i < this.orbitPositions.length - 1; i++) {
+                    ctx.moveTo(this.orbitPositions[i].x, this.orbitPositions[i].y);
+                    ctx.lineTo(this.orbitPositions[i + 1].x, this.orbitPositions[i + 1].y);
+                }
+                ctx.strokeStyle = this.colors[0];
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.closePath();
+
+                // Desenhar corpo celestial
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, this.colors[0]);
+                gradient.addColorStop(1, this.colors[1]);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function drawHorizontalLine() {
+            // calculate the end position of the line
+            const endLineX = sun.x + neptune.orbitRadius + neptune.radius;
+
+            ctx.beginPath();
+            ctx.moveTo(sun.x, canvas.height / 2);
+            ctx.lineTo(endLineX, canvas.height / 2);
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+
+        function displayDistance(planet, index) {
+            if (index === 0) return; // Skip the Sun
+
+            const distanceAU = Math.round(planet.orbitRadius / 10) / 10;
+            const distanceKM = Math.round(distanceAU * 149.6 * 10 ** 6);
+
+            // Convertendo para String e adicionando pontos
+            const distanceKMStr = distanceKM.toLocaleString('pt-BR');
+
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+                `${distanceKMStr} km`,
+                canvas.width / 2 + planet.orbitRadius,
+                canvas.height / 2 - 10
+            );
+        }
+
+
+        function displayPlanetName(planet, index) {
+            if (index === 0) return; // Skip the Sun
+
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+                planet.name,
+                canvas.width / 2 + planet.orbitRadius,
+                canvas.height / 2 + 20
+            );
+        }
+
+
+
+        const planetSizes = {
+            mercury: 4.88 / 4.88, // Diâmetro de Mercúrio: 4.880 km (1 pixel)
+            venus: 12.104 / 4.880, // Diâmetro de Vênus: 12.104 km
+            earth: 12.742 / 4.880, // Diâmetro da Terra: 12.742 km
+            mars: 6.779 / 4.880, // Diâmetro de Marte: 6.779 km
+            jupiter: 139.822 / 4.880, // Diâmetro de Júpiter: 139.822 km
+            saturn: 116.460 / 4.880, // Diâmetro de Saturno: 116.460 km
+            uranus: 50.724 / 4.880, // Diâmetro de Urano: 50.724 km
+            neptune: 49.244 / 4.880, // Diâmetro de Netuno: 49.244 km
+            sun: 695.500 / 4.880, // Diâmetro do Sol: 1.391.000 km
+        };
+
+
+        // Proporções de velocidade de órbita com base em Mercúrio
+        const mercuryRevolution = 8.8;
+        const mercurySpeed = (2 * Math.PI / mercuryRevolution) / 10;
+        const venusSpeed = mercurySpeed * (88 / 224.7);
+        const earthSpeed = mercurySpeed * (88 / 365.2);
+        const marsSpeed = mercurySpeed * (88 / 687);
+        const jupiterSpeed = mercurySpeed * (88 / 4331);
+        const saturnSpeed = mercurySpeed * (88 / 10747);
+        const uranusSpeed = mercurySpeed * (88 / 30589);
+        const neptuneSpeed = mercurySpeed * (88 / 59800);
+
+
+        const sun = new CelestialBody(canvas.width / 2, canvas.height / 2, planetSizes.sun, ['#FDB813', '#F37335'], 0, 0, "Sun");
+        const mercury = new CelestialBody(0, 0, planetSizes.mercury, ['#A9A9A9', '#808080'], 200, mercurySpeed, "Mercurio");
+        const venus = new CelestialBody(0, 0, planetSizes.venus, ['#CD7F32', '#FFA07A'], 300, venusSpeed, "Vênus");
+        const earth = new CelestialBody(0, 0, planetSizes.earth, ['#2E8B57', '#32CD32'], 400, earthSpeed, "Terra");
+        const mars = new CelestialBody(0, 0, planetSizes.mars, ['#8B0000', '#B22222'], 550, marsSpeed, "Marte");
+        const jupiter = new CelestialBody(0, 0, planetSizes.jupiter, ['#8B7765', '#D2B48C'], 750, jupiterSpeed, "Júpiter");
+        const saturn = new CelestialBody(0, 0, planetSizes.saturn, ['#DAA520', '#FFD700'], 1050, saturnSpeed, "Saturno");
+        saturn.ring = {
+            outerRadius: saturn.radius * 2,
+            innerRadius: saturn.radius * 1.5,
+            color: '#7f7f7f35'  // Cinza fumaça
+        };
+
+        const uranus = new CelestialBody(0, 0, planetSizes.uranus, ['#80DEEA', '#00ACC1'], 1400, uranusSpeed, "Urâno");
+        uranus.ring = {
+            outerRadius: uranus.radius * 1.8,
+            innerRadius: uranus.radius * 1.3,
+            color: '#7f7f7f35'  // Cinza fumaça
+        };
+        const neptune = new CelestialBody(0, 0, planetSizes.neptune, ['#483D8B', '#663399'], 1800, neptuneSpeed, "Netuno");
+
+        const celestialBodies = [sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune];
+
+        function animate() {
+            if (!isPaused) {
+                celestialBodies.forEach((planet) => {
+                    planet.update();
+                });
+                draw();
+            }
+            requestAnimationFrame(animate);
+        }
+
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(currentDragOffset.x, currentDragOffset.y);
+
+            drawHorizontalLine();
+
+            celestialBodies.forEach((planet, index) => {
+                planet.draw();
+                planet.drawRing();  // Draw the ring if the planet has one
+                displayDistance(planet, index);
+                displayPlanetName(planet, index);
+            });
+
+            ctx.restore();
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const infoButton = document.getElementById('info-button');
+        const infoModal = document.getElementById('info-modal');
+
+        infoButton.addEventListener('click', function () {
+            if (infoModal.style.display === 'none') {
+                infoModal.style.display = 'block';
+                infoModal.style.opacity = '1';
+            } else {
+                infoModal.style.opacity = '0';
+                setTimeout(() => {
+                    infoModal.style.display = 'none';
+                }, 300);
+            }
+        });
+
+    </script>
+</body>
+
+</html>
